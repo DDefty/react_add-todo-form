@@ -8,7 +8,12 @@ import { TodoList } from './components/TodoList';
 export const App = () => {
   const [title, setTitle] = useState('');
   const [user, setUser] = useState('');
-  const [todos, setTodos] = useState(todosFromServer);
+  const [todos, setTodos] = useState(
+    todosFromServer.map(todo => ({
+      ...todo,
+      user: usersFromServer.find(u => u.id === todo.userId),
+    })),
+  );
   const [isTitleValid, setIsTitleValid] = useState(true);
   const [isUserValid, setIsUserValid] = useState(true);
 
@@ -19,31 +24,28 @@ export const App = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Lepsze sprawdzanie walidacji z trim()
+    // Improved validation with trim()
     const isTitleValidNow = title.trim().length > 0;
     const isUserValidNow = user.trim().length > 0;
 
     setIsTitleValid(isTitleValidNow);
     setIsUserValid(isUserValidNow);
 
-    const tempTodos = [...todos];
-
     if (isTitleValidNow && isUserValidNow) {
-      const maxId = Math.max(...todos.map(todo => todo.id));
-
-      tempTodos.push({
+      const foundUser = findUser(user);
+      const maxId = todos.length ? Math.max(...todos.map(todo => todo.id)) : 0;
+      const newTodo = {
         id: maxId + 1,
-        title: title.trim(), // Używamy trim() przy zapisywaniu
+        title: title.trim(),
         completed: false,
-        userId: findUser(user)?.id ?? 0,
-      });
+        userId: foundUser?.id ?? 0,
+        user: foundUser,
+      };
 
-      // Clear form after successful submission
+      setTodos([...todos, newTodo]);
       setTitle('');
       setUser('');
     }
-
-    setTodos(tempTodos);
   };
 
   return (
@@ -60,9 +62,7 @@ export const App = () => {
             value={title}
             onChange={e => {
               setTitle(e.target.value);
-              if (e.target.value.trim().length > 0) {
-                setIsTitleValid(true);
-              }
+              setIsTitleValid(true);
             }}
             placeholder="Enter a title"
           />
@@ -78,9 +78,7 @@ export const App = () => {
             value={user}
             onChange={e => {
               setUser(e.target.value);
-              if (e.target.value.trim().length > 0) {
-                setIsUserValid(true);
-              }
+              setIsUserValid(true);
             }}
           >
             <option value="" disabled>
