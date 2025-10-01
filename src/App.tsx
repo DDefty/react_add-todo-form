@@ -17,12 +17,12 @@ export const App = () => {
   const [isTitleValid, setIsTitleValid] = useState(true);
   const [isUserValid, setIsUserValid] = useState(true);
 
-  const findUser = (name: string) => {
-    return usersFromServer.find(userFind => userFind.name === name);
+  const findUser = (id: number) => {
+    return usersFromServer.find(userFind => userFind.id === id);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
 
     // Improved validation with trim()
     const isTitleValidNow = title.trim().length > 0;
@@ -32,7 +32,8 @@ export const App = () => {
     setIsUserValid(isUserValidNow);
 
     if (isTitleValidNow && isUserValidNow) {
-      const foundUser = findUser(user);
+      const userId = parseInt(user);
+      const foundUser = findUser(userId);
       const maxId = todos.length ? Math.max(...todos.map(todo => todo.id)) : 0;
       const newTodo = {
         id: maxId + 1,
@@ -60,8 +61,8 @@ export const App = () => {
             type="text"
             data-cy="titleInput"
             value={title}
-            onChange={e => {
-              setTitle(e.target.value);
+            onChange={event => {
+              setTitle(event.target.value);
               setIsTitleValid(true);
             }}
             placeholder="Enter a title"
@@ -76,16 +77,16 @@ export const App = () => {
           <select
             data-cy="userSelect"
             value={user}
-            onChange={e => {
-              setUser(e.target.value);
+            onChange={event => {
+              setUser(event.target.value);
               setIsUserValid(true);
             }}
           >
             <option value="" disabled>
               Choose a user
             </option>
-            {usersFromServer.map((us, index) => (
-              <option key={index} value={us.name}>
+            {usersFromServer.map(us => (
+              <option key={us.id} value={us.id}>
                 {us.name}
               </option>
             ))}
